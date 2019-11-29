@@ -1,6 +1,5 @@
 #!/bin/bash
 #set -x
-kubectl get csp
 state="Offline"
 nb_csp_offline=$(kubectl get csp  |grep $state |wc -l)
 echo "nb cvr group by status:"

@@ -1,8 +1,8 @@
 #!/bin/bash
 #set -x
 kubectl get csp
-export state="Offline"
-export nb_csp_offline=$(kubectl get csp  |grep $state |wc -l)
+state="Offline"
+nb_csp_offline=$(kubectl get csp  |grep $state |wc -l)
 echo "nb csp "$state": "$nb_csp_offline
 if [ $nb_csp_offline = 2 ]
 then
@@ -15,8 +15,10 @@ then
         csp_offline=$(kubectl get csp  |grep $state | cut -d ' ' -f1)
         ls_csp_offline=$(echo $csp_offline|sed 's/ /,/g')
         echo ${ls_csp_offline}
+
         ## create the script for extrating the replica id of pvc impacted by csp
-        export jsonpath="'{range .items[*]}{.metadata.name}{\" == \"}{.spec.replicaid}{\"\\\\n\"}'"
+        jsonpath="'{range .items[*]}{.metadata.name}{\" == \"}{.spec.replicaid}{\"\\\\n\"}'"
+
         echo "kubectl get cvr -n openebs -l 'cstorpool.openebs.io/name in ("${ls_csp_offline}")'  -o jsonpath=$jsonpath" > pvc_extract.sh
         echo "pvc replica id impacted by csp_offline:"
         echo "======================================="
@@ -25,9 +27,9 @@ then
         echo "======================================="
         for u in csp_offline;
           do
-            kubectl patch csp $u --type=merge --patch '{"status":{"phase":"Healthy"}}';
+            kubectl patch csp $u --type=merge --patch '{"status":{"phase":"Init"}}';
           done;
-        echo "wait until all csp have healthy status"
+        echo "now wait until all csp have healthy status"
         echo "======================================"
         export nb_csp_healthy="0" ; while [ $nb_csp_healthy !=  3 ]; do kubectl get csp; sleep 3; export nb_csp_healthy=$(kubectl get csp  |grep Healthy |wc -l);  done;
         echo "change consistencyfactor, replicationFactor, ignore replica id:"

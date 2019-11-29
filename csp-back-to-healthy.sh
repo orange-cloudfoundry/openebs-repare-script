@@ -19,6 +19,10 @@ echo "Offline:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.pha
 echo "Degraded:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Degraded | wc -l)
 echo "Recreate:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Recreate | wc -l)
 
+echo "cstor pull status:"
+echo "======================="
+kubectl get pod -n openebs  -l app=cstor-pool
+
 if [ $nb_csp_offline = 2 ]
 then
     # check if all 3 pod of  cstor-pool are in running mode

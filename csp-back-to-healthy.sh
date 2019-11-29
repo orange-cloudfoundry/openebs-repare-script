@@ -4,6 +4,12 @@ kubectl get csp
 state="Offline"
 nb_csp_offline=$(kubectl get csp  |grep $state |wc -l)
 echo "nb csp "$state": "$nb_csp_offline
+echo "nb cvr group by status:"
+
+echo "Healthy:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Healthy | wc -l)
+echo "Offline:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o OffLine | wc -l)
+echo "Recreate:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Recreate | wc -l)
+
 if [ $nb_csp_offline = 2 ]
 then
     # check if all 3 pod of  cstor-pool are in running mode
@@ -41,5 +47,5 @@ then
      echo "pods of ctor pool are not all  in running mode => script not applicable"
 fi
 else
-        echo "nb csp Offline is not 2 => script is not applicable"
+        echo "nb csp Offline is not 2/3 => script is not applicable"
 fi

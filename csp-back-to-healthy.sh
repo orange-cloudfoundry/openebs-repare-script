@@ -39,5 +39,5 @@ then
      echo "pods of ctor pool are not all  in running mode => script not applicable"
 fi
 else
-        echo "script not applicable"
+        echo "nb csp Offline is not 2 => script is not applicable"
 fi

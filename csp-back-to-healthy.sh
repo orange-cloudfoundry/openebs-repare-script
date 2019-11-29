@@ -38,7 +38,6 @@ then
 
         ## create the script for extrating the replica id of pvc impacted by csp
         jsonpath="'{range .items[*]}{.metadata.name}{\" == \"}{.spec.replicaid}{\"\\\\n\"}'"
-
         echo "kubectl get cvr -n openebs -l 'cstorpool.openebs.io/name in ("${ls_csp_offline}")'  -o jsonpath=$jsonpath" > pvc_extract.sh
         echo "pvc replica id impacted by csp_offline:"
         echo "======================================="
@@ -55,8 +54,30 @@ then
         echo "change consistencyfactor, replicationFactor, ignore replica id:"
         echo "==============================================================="
         kubectl get  cStorVolume  -n openebs -o yaml |sed 's/consistencyFactor: 2/consistencyFactor: 1/g'|sed 's/replicationFactor: 3/replicationFactor: 1/g' > file.yaml
-        for u in $(sh pvc_extract.sh | cut -d ' ' -f3); do cat file.yaml|sed 's/'$u'/#'${u}'/g' >tmp.yaml;mv tmp.yaml file.yaml; done
-        kubectl patch cvr --type=merge --patch "$(catfile.yaml)"
+
+        # create the file for the patch
+        echo 'spec:' >tmp.yaml
+        echo '  consistencyFactor: 1' >>tmp.yaml
+        echo '  replicationFactor: 1' >>tmp.yaml
+        echo '  replicaDetails:' >> tmp.yaml
+        echo '    knownReplicas: ' >> tmp.yaml
+        for u in $(sh pvc_extract.sh | cut -d ' ' -f3);
+          do echo '      '$u': null' >>tmp.yaml;
+        done;
+        echo 'status:' >> tmp.yaml
+        echo '  replicaDetails:' >> tmp.yaml
+        echo '    knownReplicas:' >> tmp.yaml;
+        for u in $(sh pvc_extract.sh | cut -d ' ' -f3);
+          do echo '      '$u': null' >>tmp.yaml;
+        done;
+        # end of patch creation
+        echo "apply patch on each cStorVolume"
+
+        for cStorVolume in $(kubectl get cStorVolume -n openebs | cut -d ' ' -f1);
+        do
+            kubectl patch cStorVolume $cStorVolume -n openebs --type=merge --patch "$(cat tmp.yaml)";
+        done;
+
     else
      echo "pods of ctor pool are not all  in running mode => script not applicable"
 fi

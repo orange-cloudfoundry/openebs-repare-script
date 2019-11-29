@@ -9,16 +9,12 @@ then
     # check if all 3 pod of  cstor-pool are in running mode
     export nb_pod_cstor_pool=$(kubectl get pod -n openebs  -l app=cstor-pool |grep Running| wc -l)
     if [ $nb_pod_cstor_pool = 3 ]
-    then 
+    then
         echo "csp "/${state}":"
         echo "============"
         csp_offline=$(kubectl get csp  |grep $state | cut -d ' ' -f1)
         ls_csp_offline=$(echo $csp_offline|sed 's/ /,/g')
         echo ${ls_csp_offline}
-        for u in csp_offline;
-          do
-            kubectl patch csp $u --type=merge --patch '{"status":{"phase":"Healthy"}}';
-          done;
         ## create the script for extrating the replica id of pvc impacted by csp
         export jsonpath="'{range .items[*]}{.metadata.name}{\" == \"}{.spec.replicaid}{\"\\\\n\"}'"
         echo "kubectl get cvr -n openebs -l 'cstorpool.openebs.io/name in ("${ls_csp_offline}")'  -o jsonpath=$jsonpath" > pvc_extract.sh
@@ -27,8 +23,10 @@ then
         sh pvc_extract.sh | cut -d ' ' -f3
         echo "change csp status from Offline to Init:"
         echo "======================================="
-        kubectl get csp -o yaml | sed 's/phase: Offline/phase: Init/g' > update_state.yaml
-        kubectl replace -f update_state.yaml --force
+        for u in csp_offline;
+          do
+            kubectl patch csp $u --type=merge --patch '{"status":{"phase":"Healthy"}}';
+          done;
         echo "wait until all csp have healthy status"
         echo "======================================"
         export nb_csp_healthy="0" ; while [ $nb_csp_healthy !=  3 ]; do kubectl get csp; sleep 3; export nb_csp_healthy=$(kubectl get csp  |grep Healthy |wc -l);  done;

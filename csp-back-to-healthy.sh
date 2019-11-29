@@ -3,11 +3,21 @@
 kubectl get csp
 state="Offline"
 nb_csp_offline=$(kubectl get csp  |grep $state |wc -l)
-echo "nb csp "$state": "$nb_csp_offline
 echo "nb cvr group by status:"
+echo "======================="
 
+echo "Healthy:" $(kubectl get csp -o=jsonpath='{.items[*].status.phase}' | grep -o Healthy | wc -l)
+echo "Init:" $(kubectl get csp -o=jsonpath='{.items[*].status.phase}' | grep -o Init | wc -l)
+echo "Offline:" $(kubectl get csp -o=jsonpath='{.items[*].status.phase}' | grep -o Offline | wc -l)
+echo "Degraded:" $(kubectl get csp -o=jsonpath='{.items[*].status.phase}' | grep -o Degraded | wc -l)
+echo "Recreate:" $(kubectl get csp -o=jsonpath='{.items[*].status.phase}' | grep -o Recreate | wc -l)
+
+
+echo "nb cvr group by status:"
+echo "======================="
 echo "Healthy:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Healthy | wc -l)
 echo "Offline:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o OffLine | wc -l)
+echo "Degraded:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Degraded | wc -l)
 echo "Recreate:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Recreate | wc -l)
 
 if [ $nb_csp_offline = 2 ]

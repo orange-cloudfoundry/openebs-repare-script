@@ -50,10 +50,16 @@ then
           done;
         echo "now wait until all csp have healthy status"
         echo "======================================"
-        export nb_csp_healthy="0" ; while [ $nb_csp_healthy !=  3 ]; do kubectl get csp; sleep 3; export nb_csp_healthy=$(kubectl get csp  |grep Healthy |wc -l);  done;
+        export nb_csp_healthy="0" ;
+        while [ $nb_csp_healthy !=  3 ];
+          do
+            kubectl get csp;
+            sleep 3;
+            export nb_csp_healthy=$(kubectl get csp  |grep Healthy |wc -l);
+          done;
+
         echo "change consistencyfactor, replicationFactor, ignore replica id:"
         echo "==============================================================="
-
         # create the file for the patch
         echo 'spec:' >tmp.yaml
         echo '  consistencyFactor: 1' >>tmp.yaml
@@ -61,17 +67,21 @@ then
         echo '  replicaDetails:' >> tmp.yaml
         echo '    knownReplicas: ' >> tmp.yaml
         for u in $(sh pvc_extract.sh | cut -d ' ' -f3);
-          do echo '      '$u': null' >>tmp.yaml;
-        done;
+          do
+            echo '      '$u': null' >>tmp.yaml;
+          done;
         echo 'status:' >> tmp.yaml
         echo '  replicaDetails:' >> tmp.yaml
         echo '    knownReplicas:' >> tmp.yaml;
         for u in $(sh pvc_extract.sh | cut -d ' ' -f3);
-          do echo '      '$u': null' >>tmp.yaml;
-        done;
+          do
+            echo '      '$u': null' >>tmp.yaml;
+          done;
         # end of patch creation
-        echo "apply patch on each cStorVolume"
 
+
+        echo "apply patch on each cStorVolume:"
+        echo "================================"
         for cStorVolume in $(kubectl get cStorVolume -n openebs | cut -d ' ' -f1);
         do
             kubectl patch cStorVolume $cStorVolume -n openebs --type=merge --patch "$(cat tmp.yaml)";

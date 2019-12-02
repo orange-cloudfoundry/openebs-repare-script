@@ -53,7 +53,6 @@ then
         export nb_csp_healthy="0" ; while [ $nb_csp_healthy !=  3 ]; do kubectl get csp; sleep 3; export nb_csp_healthy=$(kubectl get csp  |grep Healthy |wc -l);  done;
         echo "change consistencyfactor, replicationFactor, ignore replica id:"
         echo "==============================================================="
-        kubectl get  cStorVolume  -n openebs -o yaml |sed 's/consistencyFactor: 2/consistencyFactor: 1/g'|sed 's/replicationFactor: 3/replicationFactor: 1/g' > file.yaml
 
         # create the file for the patch
         echo 'spec:' >tmp.yaml

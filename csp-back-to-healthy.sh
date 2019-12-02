@@ -2,7 +2,7 @@
 #set -x
 state="Offline"
 nb_csp_offline=$(kubectl get csp  |grep $state |wc -l)
-echo "nb cvr group by status:"
+echo "nb csp group by status:"
 echo "======================="
 
 echo "Healthy:" $(kubectl get csp -o=jsonpath='{.items[*].status.phase}' | grep -o Healthy | wc -l)

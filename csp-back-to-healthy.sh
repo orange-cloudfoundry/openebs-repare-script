@@ -23,7 +23,7 @@ echo "cstor pull status:"
 echo "======================="
 kubectl get pod -n openebs  -l app=cstor-pool
 
-if [[ ${nb_csp_offline} = 2 ]]
+if [ ${nb_csp_offline} = 2 ]
 then
     # check if all 3 pod of  cstor-pool are in running mode
     nb_pod_cstor_pool=$(kubectl get pod -n openebs  -l app=cstor-pool |grep Running| wc -l)

@@ -14,7 +14,7 @@ echo "Recreate:" $(kubectl get csp -o=jsonpath='{.items[*].status.phase}' | grep
 
 echo "nb cvr group by status:"
 echo "======================="
-echo "Healthy:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Healthy | wc -l)
+echo "Healthy:" "$(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Healthy | wc -l)"
 echo "Offline:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o OffLine | wc -l)
 echo "Degraded:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Degraded | wc -l)
 echo "Recreate:" $(kubectl get cvr  -n openebs -o=jsonpath='{.items[*].status.phase}' | grep -o Recreate | wc -l)
@@ -23,11 +23,11 @@ echo "cstor pull status:"
 echo "======================="
 kubectl get pod -n openebs  -l app=cstor-pool
 
-if [ ${nb_csp_offline} = 2 ]
+if [[ ${nb_csp_offline} -eq 2 ]]
 then
     # check if all 3 pod of  cstor-pool are in running mode
     nb_pod_cstor_pool=$(kubectl get pod -n openebs  -l app=cstor-pool |grep Running| wc -l)
-    if [[ ${nb_pod_cstor_pool} = 3 ]]
+    if [[ ${nb_pod_cstor_pool}  -eq 3 ]]
     then
         echo "try to repare the case of 2 disks have been changed (ie they are Offline)"
         echo "csp "/${state}":"
